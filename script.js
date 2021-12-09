@@ -229,7 +229,8 @@ function addToDisplay(e) {
             });
             // checks if keyboard down gave us any non digit or non '.' 
             // characters and eliminates them.
-            if (!Number(toBeChecked) && toBeChecked != '.') {
+            if (!Number(toBeChecked) && toBeChecked != '.' && toBeChecked != '0') {
+                console.log(!Number(toBeChecked))
                 return
             } 
             // makes sure no double '.' characters are allowed in the display
