@@ -16,15 +16,23 @@ delete the last chosen number.
 8. Repeat from 4th step
 */
 
-let numberOne = null;
-let numberTwo = null;
+let numberOne = '';
+let numberTwo = '';
 let operation = '';
 let display = document.querySelector('.current-display');
 let displayHistory = document.querySelector('.history-display');
+let operators = document.querySelectorAll('.operators');
+let minusButton = document.querySelector('.minus');
+let addButton = document.querySelector('.add');
+let multiplyButton = document.querySelector('.multiply');
+let divideButton = document.querySelector('.divide');
 let calculations = [];
 let isFirst = true;
+let resetNeeded = true;
 
 function operate(firstNumber, secondNumber, operation) {
+    firstNumber = Number(firstNumber);
+    secondNumber = Number(secondNumber);
     switch(operation) {
         case 'add':
             add(firstNumber, secondNumber);
@@ -77,6 +85,15 @@ function multiply (firstNumber, secondNumber) {
 
 function updateDisplays () {
     display.textContent = calculations[0].result;
+    if (display.textContent.length > 9) {
+        display.style.fontSize = '25px'
+        display.textContent = 
+            Math.round((display.textContent.slice(0, 18)) * 10000000000)
+            / 10000000000;
+    } else {
+        display.style.fontSize = '50px';
+    }
+    
     displayHistory.textContent = calculations[0].operation;
 }
 
@@ -89,14 +106,15 @@ function listenForPress() {
 
 function evaluate() {
     if (isFirst == true) {
-        firstNumber = takeScreen();
-        resetDisplay();
+        numberOne =display.textContent;
         isFirst = false;
+        
     } else {
-        secondNumber = takeScreen()
-        operate(firstNumber, secondNumber, operation);
+        numberTwo = display.textContent;
+        operate(numberOne, numberTwo, operation);
         updateDisplays()
-        firstNumber = takeScreen()
+        numberOne = calculations[0].result;
+        resetNeeded = true;
     }
 }
 
@@ -104,6 +122,13 @@ function clearScreen() {
     display.textContent = 0;
     displayHistory.textContent = '-';
     display.style.fontSize = '50px';
+    numberOne = '';
+    numberTwo = '';
+    isFirst = true;
+    resetNeeded = true;
+    operators.forEach((button) => {
+        button.classList.remove('selected');
+    });
 }
 
 function deleteLast() {
@@ -119,7 +144,7 @@ function deleteLast() {
 }
 
 function takeScreen() {
-   return Number(display.textContent)
+   return display.textContent
 }
 
 function resetDisplay() {
@@ -127,45 +152,99 @@ function resetDisplay() {
 }
 
 function addToDisplay(e) {
-
-    switch (e.target.textContent) {
+    // checks if mouse or keyboard is sending event
+    let toBeChecked = ''
+    if (e.type == 'click') {
+        toBeChecked = e.target.innerText;  
+    } else if (e.type == 'keydown') {
+        toBeChecked = e.key
+    }
+    
+    // checks which button was clicked or pressed on keyboard
+    switch (toBeChecked) {
         case 'Clear':
+        case 'Escape':
             clearScreen();
             break;
         case 'Delete':
+        case 'Backspace':
             deleteLast();
             break;
         case '+':
+            addButton.classList.add('selected'); // highlights button
+            if (isFirst == true) {
+                operation = 'add';
+            }
+            evaluate()
             operation = 'add';
-            evaluate()         
             break;
         case '-':
-            operation = 'substract';
+            minusButton.classList.add('selected');
+            if (isFirst == true) {
+                operation = 'substract';
+            }
             evaluate();
+            operation = 'substract';
             break;
         case 'x':
-            operation = 'multiply';
+        case '*':
+            multiplyButton.classList.add('selected');
+            if (isFirst == true) {
+                operation = 'substract';
+            }
             evaluate()
+            operation = 'multiply';
             break;
         case '÷':
-            operation = 'divide';
+        case '/':
+            divideButton.classList.add('selected');
+            if (isFirst == true) {
+                operation = 'substract';
+            }
             evaluate()
+            operation = 'divide';
             break;
         case '=':
-            evaluate();
+        case 'Enter':
+            // if nothing is inserted the calculator does nothing
+            if( numberOne === '' && numberTwo === '') {
+                return
+            }
+            
+            // if isFirst is false aka it's not the first operation
+            if (!isFirst) numberTwo = display.textContent;
+            operate(numberOne, numberTwo, operation);
+            updateDisplays()
+            numberOne = calculations[0].result;
+            resetNeeded = true;
             isFirst = true;
             break;
         default:
+            // removes highlights as soon as new number is clicked
+            operators.forEach((button) => {
+                button.classList.remove('selected');
+            });
+            
+            if (!Number(toBeChecked) && toBeChecked != '.') {
+                return
+            } 
+            if (display.textContent.includes('.') && toBeChecked == '.') {
+                return
+            }
+
+            if (isFirst == false && resetNeeded == true) {
+                resetDisplay();
+                resetNeeded = false;
+            }
             try {
                 if (display.textContent == calculations[0].result) {
                     resetDisplay()
                 }
             } catch(err) {
-                console.log(err)
             }
             
             if (display.textContent == 0) {
-                display.textContent = e.target.innerText    
+                display.textContent = toBeChecked   
             } else {
                 if (display.textContent.length >= 18) {
                     break
@@ -173,10 +252,12 @@ function addToDisplay(e) {
                 if (display.textContent.length == 9) {
                     display.style.fontSize = '25px'
                 }
-                
-                display.textContent += e.target.innerText
+                display.textContent += toBeChecked;
+        
             }
     }
 }
 
+
 listenForPress();
+window.addEventListener('keydown', addToDisplay)
