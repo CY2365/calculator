@@ -51,6 +51,9 @@ function operate(firstNumber, secondNumber, operation) {
     }
 }
 
+// Functions create objects named calculation and store them in the
+// calculations array. The operation and result are later displayed 
+// on the screen.
 function add(firstNumber, secondNumber) {  
     let calculation = {
         operation:  `${firstNumber} + ${secondNumber}`,
@@ -93,10 +96,10 @@ function updateDisplays () {
     } else {
         display.style.fontSize = '50px';
     }
-    
     displayHistory.textContent = calculations[0].operation;
 }
 
+// Adds event listeners to the buttons.
 function listenForPress() {
     let allButtons = document.querySelectorAll('.buttons');
     allButtons.forEach(function(button){
@@ -224,10 +227,12 @@ function addToDisplay(e) {
             operators.forEach((button) => {
                 button.classList.remove('selected');
             });
-            
+            // checks if keyboard down gave us any non digit or non '.' 
+            // characters and eliminates them.
             if (!Number(toBeChecked) && toBeChecked != '.') {
                 return
             } 
+            // makes sure no double '.' characters are allowed in the display
             if (display.textContent.includes('.') && toBeChecked == '.') {
                 return
             }
@@ -236,6 +241,8 @@ function addToDisplay(e) {
                 resetDisplay();
                 resetNeeded = false;
             }
+            // checks if a new calculation is being started from scratch
+            // calculations[0].result might not be created yet so try catch
             try {
                 if (display.textContent == calculations[0].result) {
                     resetDisplay()
@@ -243,12 +250,15 @@ function addToDisplay(e) {
             } catch(err) {
             }
             
+
             if (display.textContent == 0) {
                 display.textContent = toBeChecked   
             } else {
+                // makes sure the display doesn't overflow
                 if (display.textContent.length >= 18) {
                     break
                 }
+                // makes sure there is enough space for larger numbers
                 if (display.textContent.length == 9) {
                     display.style.fontSize = '25px'
                 }
@@ -257,7 +267,6 @@ function addToDisplay(e) {
             }
     }
 }
-
 
 listenForPress();
 window.addEventListener('keydown', addToDisplay)
